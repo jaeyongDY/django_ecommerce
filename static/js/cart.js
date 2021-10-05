@@ -8,12 +8,33 @@ for (var i = 0; i < updateBtns.length; i++) {
 
         console.log("User", user)
 
-        if (user === 'AnonymousUser') {
-            console.log("not logged in")
+        if (user == 'AnonymousUser') {
+            addCookieItem(productId, action)
         } else {
             updateUserOrder(productId, action)
         }
     })
+}
+
+function addCookieItem(productId, action) {
+    console.log('User is not authenticated');
+    if (action == 'add') {
+        if (cart[productId] == undefined) {
+            cart[productId] = { 'quantitiy': 1 }
+        } else {
+            cart[productId]['quantitiy'] += 1
+        }
+    }
+    if (action == 'remove') {
+        cart[productId]['quantitiy'] -= 1
+
+        if (cart[productId]['quantitiy'] <= 0) {
+            delete cart[productId];
+        }
+    }
+    console.log('Cart', cart)
+    document.cookie = 'cart=' + JSON.stringify(cart) + ';domain=;path=/';
+    location.reload()
 }
 
 function updateUserOrder(productId, action) {

@@ -29,12 +29,27 @@ def cart(request):
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
+        try:
+            cart = json.loads(request.COOKIES['cart'])
+        except:
+            cart = {}
+        print('CART',cart)
         items = []
         order = {'get_cart_total':0,'get_cart_items':0}
         cartItems = order['get_cart_items']
 
+        for i in cart:
+            cartItems += cart[i]['quantitiy']
+
+            product = Product.objects.get(id=i)
+            total = (product.price * cart[i]['quantitiy'])
+
+            order['get_cart_total'] += total
+            order['get_cart_items'] += cart[i]['quantitiy']
+
     context= {'items':items,'order':order,'cartItems':cartItems,'shipping':False}
     return render(request,'store/cart.html',context)
+
 
 def checkout(request):
     if request.user.is_authenticated:
@@ -73,7 +88,9 @@ def updateItem(request):
 
     return JsonResponse("Item was added",safe=False)
 
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def processOrder(request):
     transcation_id = datetime.datetime.now().timestamp()
     data = json.loads(request.body)
